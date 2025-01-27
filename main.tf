@@ -23,7 +23,8 @@ resource "ibm_is_subnet" "subnet_1" {
   name            = "subnet-rgonzalez-zona1"
   vpc             = ibm_is_vpc.vpc_module_rgonzalez.id
   zone            = "eu-es-1"
-  ipv4_cidr_block = "10.251.10.0/24"
+  # ipv4_cidr_block = "10.251.10.0/24"
+  total_ipv4_address_count = 256  # Ampliado para permitir más direcciones
   resource_group  = var.resource_group
 }
 
@@ -31,7 +32,8 @@ resource "ibm_is_subnet" "subnet_2" {
   name            = "subnet-rgonzalez-zona2"
   vpc             = ibm_is_vpc.vpc_module_rgonzalez.id
   zone            = "eu-es-2"  # Nueva zona
-  ipv4_cidr_block = "10.251.20.0/24"  # Nuevo rango
+  # ipv4_cidr_block = "10.251.20.0/24"  # Nuevo rango
+  total_ipv4_address_count = 256  # Ampliado para permitir más direcciones
   resource_group  = var.resource_group
 }
 
