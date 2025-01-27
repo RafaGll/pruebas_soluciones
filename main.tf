@@ -157,6 +157,7 @@ resource "ibm_is_lb_pool" "pool_web" {
   health_delay   = 5
   health_retries = 2
   health_timeout = 2
+  health_type = "http"
 }
 
 resource "ibm_is_lb_listener" "http" {
