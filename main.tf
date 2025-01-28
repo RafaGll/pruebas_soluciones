@@ -36,36 +36,7 @@ resource "ibm_is_subnet" "subnet_2" {
   # ipv4_cidr_block = "10.251.20.0/24"  # Nuevo rango
   total_ipv4_address_count = 256  # Ampliado para permitir más direcciones
   resource_group  = var.resource_group
-  # network_acl = ibm_is_network_acl.acl.id
 }
-
-# resource "ibm_is_network_acl" "acl" {
-#   name = "acl-rgonzalez"
-#   vpc  = ibm_is_vpc.vpc_module_rgonzalez.id
-#   resource_group = var.resource_group
-
-#   # Regla para permitir tráfico HTTP entrante
-#   rules {
-#     name        = "allow-http-inbound"
-#     action      = "allow"
-#     source      = "0.0.0.0/0"
-#     destination = "0.0.0.0/0"
-#     direction   = "inbound"
-#     tcp {
-#       port_min = 80
-#       port_max = 80
-#     }
-#   }
-
-#   # Regla para permitir respuestas salientes
-#   rules {
-#     name        = "allow-all-outbound"
-#     action      = "allow"
-#     source      = "0.0.0.0/0"
-#     destination = "0.0.0.0/0"
-#     direction   = "outbound"
-#   }
-# }
 
 # Puertas de enlace públicas (nuevo para ejercicio 6)
 resource "ibm_is_public_gateway" "pgw_1" {
@@ -194,6 +165,7 @@ resource "ibm_is_lb" "lb_web" {
   name           = "lb-web-rgonzalez"
   type           = "public"
   subnets        = [ibm_is_subnet.subnet_1.id, ibm_is_subnet.subnet_2.id]
+  security_groups = [ibm_is_security_group.sg_web.id]
   resource_group = var.resource_group
 }
 
