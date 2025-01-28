@@ -90,6 +90,22 @@ resource "ibm_is_security_group_rule" "http" {
   }
 }
 
+# Agregar estas reglas al security group
+resource "ibm_is_security_group_rule" "outbound_all" {
+  group     = ibm_is_security_group.sg_web.id
+  direction = "outbound"
+  remote    = "0.0.0.0/0"
+}
+
+resource "ibm_is_security_group_rule" "icmp" {
+  group     = ibm_is_security_group.sg_web.id
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
+  icmp {
+    type = 8
+  }
+}
+
 # SSH Key (reutilizada del ejercicio 5)
 resource "ibm_is_ssh_key" "ssh_key_rgonzalez" {
   name       = "ssh-key-rgonzalez"
