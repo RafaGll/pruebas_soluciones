@@ -42,6 +42,7 @@ resource "ibm_is_subnet" "subnet_2" {
 resource "ibm_is_network_acl" "acl" {
   name = "acl-rgonzalez"
   vpc  = ibm_is_vpc.vpc_module_rgonzalez.id
+  resource_group = var.resource_group
 
   # Regla para permitir tráfico HTTP entrante
   rules {
