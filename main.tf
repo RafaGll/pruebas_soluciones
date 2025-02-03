@@ -1,44 +1,41 @@
 terraform {
   required_providers {
     ibm = {
-      source = "IBM-Cloud/ibm"
+      source  = "IBM-Cloud/ibm"
       version = ">= 1.12.0"
     }
   }
 }
 
 provider "ibm" {
-  region = "eu-es"
+  region          = "eu-es"
   ibmcloud_api_key = var.api_key
 }
 
-# VPC (reutilizada del ejercicio 5)
+# VPC (reutilizada)
 resource "ibm_is_vpc" "vpc_module_rgonzalez" {
-  name = "vpc-rgonzalez"
+  name           = "vpc-rgonzalez"
   resource_group = var.resource_group
 }
 
-# Subredes en dos zonas distintas (modificado para ejercicio 6)
+# Subredes en dos zonas distintas
 resource "ibm_is_subnet" "subnet_1" {
-  name            = "subnet-rgonzalez-zona1"
-  vpc             = ibm_is_vpc.vpc_module_rgonzalez.id
-  zone            = "eu-es-1"
-  # ipv4_cidr_block = "10.251.10.0/24"
-  total_ipv4_address_count = 256  # Ampliado para permitir más direcciones
-  resource_group  = var.resource_group
-  # network_acl = ibm_is_network_acl.acl.id 
+  name                      = "subnet-rgonzalez-zona1"
+  vpc                       = ibm_is_vpc.vpc_module_rgonzalez.id
+  zone                      = "eu-es-1"
+  total_ipv4_address_count  = 256
+  resource_group            = var.resource_group
 }
 
 resource "ibm_is_subnet" "subnet_2" {
-  name            = "subnet-rgonzalez-zona2"
-  vpc             = ibm_is_vpc.vpc_module_rgonzalez.id
-  zone            = "eu-es-2"  # Nueva zona
-  # ipv4_cidr_block = "10.251.20.0/24"  # Nuevo rango
-  total_ipv4_address_count = 256  # Ampliado para permitir más direcciones
-  resource_group  = var.resource_group
+  name                      = "subnet-rgonzalez-zona2"
+  vpc                       = ibm_is_vpc.vpc_module_rgonzalez.id
+  zone                      = "eu-es-2"
+  total_ipv4_address_count  = 256
+  resource_group            = var.resource_group
 }
 
-# Puertas de enlace públicas (nuevo para ejercicio 6)
+# Puertas de enlace públicas para cada zona
 resource "ibm_is_public_gateway" "pgw_1" {
   name           = "pgw-zona1"
   vpc            = ibm_is_vpc.vpc_module_rgonzalez.id
@@ -53,7 +50,7 @@ resource "ibm_is_public_gateway" "pgw_2" {
   zone           = "eu-es-2"
 }
 
-# Asociación de puertas de enlace a subredes
+# Asociación de PGWs a subredes
 resource "ibm_is_subnet_public_gateway_attachment" "pg_attach1" {
   subnet         = ibm_is_subnet.subnet_1.id
   public_gateway = ibm_is_public_gateway.pgw_1.id
@@ -64,7 +61,7 @@ resource "ibm_is_subnet_public_gateway_attachment" "pg_attach2" {
   public_gateway = ibm_is_public_gateway.pgw_2.id
 }
 
-# Security Group (ampliado para permitir HTTP)
+# Security Group para permitir SSH y HTTP
 resource "ibm_is_security_group" "sg_web" {
   name           = "sg-web-rgonzalez"
   vpc            = ibm_is_vpc.vpc_module_rgonzalez.id
@@ -91,7 +88,6 @@ resource "ibm_is_security_group_rule" "http" {
   }
 }
 
-# Agregar estas reglas al security group
 resource "ibm_is_security_group_rule" "outbound_all" {
   group     = ibm_is_security_group.sg_web.id
   direction = "outbound"
@@ -107,7 +103,7 @@ resource "ibm_is_security_group_rule" "icmp" {
   }
 }
 
-# SSH Key (reutilizada del ejercicio 5)
+# SSH Key (reutilizada)
 resource "ibm_is_ssh_key" "ssh_key_rgonzalez" {
   name       = "ssh-key-rgonzalez"
   public_key = <<-EOF
@@ -116,7 +112,7 @@ resource "ibm_is_ssh_key" "ssh_key_rgonzalez" {
   resource_group = var.resource_group
 }
 
-# Máquinas virtuales en ambas zonas
+# Máquinas Virtuales en ambas zonas
 resource "ibm_is_instance" "vm1" {
   name           = "vm-rgonzalez-zona1"
   vpc            = ibm_is_vpc.vpc_module_rgonzalez.id
@@ -149,24 +145,24 @@ resource "ibm_is_instance" "vm2" {
 
 # IPs públicas para ambas VMs
 resource "ibm_is_floating_ip" "ip_vm1" {
-  name   = "ip-vm1-rgonzalez"
-  target = ibm_is_instance.vm1.primary_network_interface[0].id
+  name           = "ip-vm1-rgonzalez"
+  target         = ibm_is_instance.vm1.primary_network_interface[0].id
   resource_group = var.resource_group
 }
 
 resource "ibm_is_floating_ip" "ip_vm2" {
-  name   = "ip-vm2-rgonzalez"
-  target = ibm_is_instance.vm2.primary_network_interface[0].id
+  name           = "ip-vm2-rgonzalez"
+  target         = ibm_is_instance.vm2.primary_network_interface[0].id
   resource_group = var.resource_group
 }
 
-# Balanceador de carga (nuevo para ejercicio 6)
+# Balanceador de carga público
 resource "ibm_is_lb" "lb_web" {
-  name           = "lb-web-rgonzalez"
-  type           = "public"
-  subnets        = [ibm_is_subnet.subnet_1.id, ibm_is_subnet.subnet_2.id]
+  name            = "lb-web-rgonzalez"
+  type            = "public"
+  subnets         = [ibm_is_subnet.subnet_1.id, ibm_is_subnet.subnet_2.id]
   security_groups = [ibm_is_security_group.sg_web.id]
-  resource_group = var.resource_group
+  resource_group  = var.resource_group
 }
 
 resource "ibm_is_lb_pool" "pool_web" {
@@ -177,7 +173,7 @@ resource "ibm_is_lb_pool" "pool_web" {
   health_delay   = 5
   health_retries = 2
   health_timeout = 2
-  health_type = "http"
+  health_type    = "http"
 }
 
 resource "ibm_is_lb_listener" "http" {
@@ -200,6 +196,33 @@ resource "ibm_is_lb_pool_member" "member2" {
   port           = 80
   target_address = ibm_is_instance.vm2.primary_network_interface[0].primary_ipv4_address
 }
+
+
+# 1. Crear la instancia de COS
+resource "ibm_resource_instance" "cos_instance" {
+  name               = "cos-instance-rgonzalez"
+  service            = "cloud-object-storage"
+  plan               = "standard"
+  location           = "eu-es"           # Ajusta la región según convenga
+  resource_group_id  = var.resource_group
+}
+
+# 2. Crear el bucket de COS
+resource "ibm_cos_bucket" "static_bucket" {
+  bucket              = "bucket-static-content-rgonzalez"
+  service_instance_id = ibm_resource_instance.cos_instance.id
+  region              = "eu-es"         # Debe coincidir (o ser cercano) a tus VMs
+  force_destroy       = true            # Permite eliminar el bucket aunque tenga objetos
+}
+
+# 3. (Opcional) Subir un objeto (por ejemplo, un index.html)
+resource "ibm_cos_object" "index_html" {
+  bucket       = ibm_cos_bucket.static_bucket.bucket
+  key          = "index.html"
+  content      = file("${path.module}/index.html")
+  content_type = "text/html"
+}
+
 
 # Outputs para acceso
 output "ip_balanceador" {
