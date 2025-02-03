@@ -203,7 +203,7 @@ resource "ibm_resource_instance" "cos_instance" {
   name               = "cos-instance-rgonzalez"
   service            = "cloud-object-storage"
   plan               = "standard"
-  location           = "eu-es"           # Ajusta la región según convenga
+  location           = "global"           # Ajusta la región según convenga
   resource_group_id  = var.resource_group
 }
 
