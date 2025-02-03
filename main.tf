@@ -209,7 +209,7 @@ resource "ibm_resource_instance" "cos_instance" {
 
 # 2. Crear el bucket de COS
 resource "ibm_cos_bucket" "static_bucket" {
-  bucket              = "bucket-static-content-rgonzalez"
+  bucket_name              = "bucket-static-content-rgonzalez"
   resource_instance_id = ibm_resource_instance.cos_instance.id
   region_location              = "eu-es"         # Debe coincidir (o ser cercano) a tus VMs
   force_delete       = true            # Permite eliminar el bucket aunque tenga objetos
