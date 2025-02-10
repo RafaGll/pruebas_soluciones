@@ -25,6 +25,20 @@ resource "ibm_is_subnet" "subnet_module_rgonzalez" {
   resource_group  = var.resource_group  
 }
 
+# Puertas de enlace públicas (nuevo para ejercicio 6)
+resource "ibm_is_public_gateway" "pgw" {
+  name           = "pgw-zona1"
+  vpc            = ibm_is_vpc.vpc_module_rgonzalez.id
+  resource_group = var.resource_group
+  zone           = "eu-es-1"
+}
+
+# Asociación de puertas de enlace a subredes
+resource "ibm_is_subnet_public_gateway_attachment" "pg_attach1" {
+  subnet         = ibm_is_subnet.subnet_module_rgonzalez.id
+  public_gateway = ibm_is_public_gateway.pgw.id
+}
+
 resource "ibm_is_security_group" "ssh_rgonzalez_security_group" {
   name            = "ssh-security-group"
   vpc          =  ibm_is_vpc.vpc_module_rgonzalez.id
@@ -39,6 +53,29 @@ resource "ibm_is_security_group_rule" "ssh_rule" {
     port_min = 22
     port_max = 22
   }
+}
+
+resource "ibm_is_security_group_rule" "http" {
+  group     = ibm_is_security_group.ssh_rgonzalez_security_group.id
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
+  tcp {
+    port_min = 80
+    port_max = 80
+  }
+}
+resource "ibm_is_security_group_rule" "icmp" {
+  group     = ibm_is_security_group.ssh_rgonzalez_security_group.id
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
+  icmp {
+    type = 8
+  }
+}
+resource "ibm_is_security_group_rule" "outbound_all" {
+  group     = ibm_is_security_group.ssh_rgonzalez_security_group.id
+  direction = "outbound"
+  remote    = "0.0.0.0/0"
 }
 
 resource "ibm_is_ssh_key" "ssh_key_rgonzalez" {
