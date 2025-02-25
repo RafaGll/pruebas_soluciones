@@ -12,98 +12,94 @@ provider "ibm" {
   ibmcloud_api_key=var.api_key
 }
 
-resource "ibm_is_vpc" "vpc_module_rgonzalez" {
-  name = "vpc-rgonzalez"
-  resource_group = var.resource_group
+locals {
+  name = "${var.name}"
+  index = length(data.ibm_container_cluster_versions.cluster_versions.valid_openshift_versions) - 2
 }
 
-resource "ibm_is_subnet" "subnet_module_rgonzalez" {
-  name = "subnet-rgonzalez"
-  vpc = ibm_is_vpc.vpc_module_rgonzalez.id
-  zone = "eu-es-1"
-  ipv4_cidr_block = "10.251.10.0/24"
-  resource_group  = var.resource_group  
+# Create random string to append to name
+resource "random_string" "id" {
+  length  = 4
+  special = false
+  upper   = false
 }
 
-# Puertas de enlace públicas (nuevo para ejercicio 6)
-resource "ibm_is_public_gateway" "pgw" {
-  name           = "pgw-zona1"
-  vpc            = ibm_is_vpc.vpc_module_rgonzalez.id
-  resource_group = var.resource_group
-  zone           = "eu-es-1"
+# Name of resource group
+data "ibm_resource_group" "resource_group" {
+  name = var.resource_group
 }
 
-# Asociación de puertas de enlace a subredes
-resource "ibm_is_subnet_public_gateway_attachment" "pg_attach1" {
-  subnet         = ibm_is_subnet.subnet_module_rgonzalez.id
-  public_gateway = ibm_is_public_gateway.pgw.id
+# Virtual Private Cloud (VPC)
+resource "ibm_is_vpc" "vpc" {
+  name = local.name
+  resource_group               = data.ibm_resource_group.resource_group.id
 }
 
-resource "ibm_is_security_group" "ssh_rgonzalez_security_group" {
-  name            = "ssh-security-group"
-  vpc          =  ibm_is_vpc.vpc_module_rgonzalez.id
-  resource_group  = var.resource_group  
-}
+# Public gateway to allow connectivity outside of the VPC
+resource "ibm_is_public_gateway" "gateway_subnet" {
+  resource_group               = data.ibm_resource_group.resource_group.id
+  count = var.number_of_zones
+  name  = "${local.name}-publicgateway-${count.index + 1}"
+  vpc   = ibm_is_vpc.vpc.id
+  zone  = "${var.region}-${count.index + 1}"
 
-resource "ibm_is_security_group_rule" "ssh_rule" {
-  group     = ibm_is_security_group.ssh_rgonzalez_security_group.id
-  direction = "inbound"
-  remote    = "0.0.0.0/0"
-  tcp {
-    port_min = 22
-    port_max = 22
+  //User can configure timeouts
+  timeouts {
+    create = "90m"
   }
 }
 
-resource "ibm_is_security_group_rule" "http" {
-  group     = ibm_is_security_group.ssh_rgonzalez_security_group.id
-  direction = "inbound"
-  remote    = "0.0.0.0/0"
-  tcp {
-    port_min = 80
-    port_max = 80
-  }
-}
-resource "ibm_is_security_group_rule" "icmp" {
-  group     = ibm_is_security_group.ssh_rgonzalez_security_group.id
-  direction = "inbound"
-  remote    = "0.0.0.0/0"
-  icmp {
-    type = 8
-  }
-}
-resource "ibm_is_security_group_rule" "outbound_all" {
-  group     = ibm_is_security_group.ssh_rgonzalez_security_group.id
-  direction = "outbound"
-  remote    = "0.0.0.0/0"
+# VPC subnets. Uses default CIDR range
+resource "ibm_is_subnet" "subnet" {
+  resource_group               = data.ibm_resource_group.resource_group.id
+  count                    = var.number_of_zones
+  name                     = "${local.name}-subnet-${count.index + 1}"
+  vpc                      = ibm_is_vpc.vpc.id
+  zone                     = "${var.region}-${count.index + 1}"
+  total_ipv4_address_count = 256
+  public_gateway           = ibm_is_public_gateway.gateway_subnet[count.index].id
 }
 
-resource "ibm_is_ssh_key" "ssh_key_rgonzalez" {
-  name       = "ssh-key-rgonzalez"
-  public_key = <<-EOF
-  ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCU94A3wzNYKAAYrOgQ6OGPcLVNYb73+FF5r/Vp/upSghDbdRzW95xm4BBTqaR+8Dm81UFycPjJlYnUaKYlrjGpTxKLoX6myC/RA0ddYH9WAD6ZRqdXepELdoikiZyvMOaMgOT5t6t9z9tWCuzkgvc5L8goYfHXzP44iGrkqR3Vf0Q3PmnHedFFFShbcT3p1vKR/9Z7VFF2my0Weg0C7tpE7VRBQ1dFlhzKCbAhWQ9SqZUowlh7/ASGzgX9K9czV6MtvE932YudPlSKrpD1GRejY+sndAfl1yOObyvKkUXmMjoqWIsRV3QBJtTNJNQk09MHMmwNEvTlW7T+ffe3Asqz
-  EOF
-  resource_group = var.resource_group
+# List of available cluster versions in IBM Cloud
+data "ibm_container_cluster_versions" "cluster_versions" {
 }
 
-resource "ibm_is_instance" "vm_rgonzalez" {
-  name              = "vm-rgonzalez"
-  vpc               = ibm_is_vpc.vpc_module_rgonzalez.id
-  profile           = "bx2-2x8"
-  zone              = "eu-es-1"
-  keys = [ibm_is_ssh_key.ssh_key_rgonzalez.id]
-  image             = "r050-b98611da-e7d8-44db-8c42-2795071eec24"
-  resource_group = var.resource_group
+# OpenShift cluster. Defaults to single zone. Version by default will take the 2nd to last in the list of the valid openshift versions given in the output of `ibmcloud oc versions`
+resource "ibm_container_vpc_cluster" "cluster" {
+  name                            = local.name
+  vpc_id                          = ibm_is_vpc.vpc.id
+  flavor                          = var.worker_flavor
+  kube_version                    = (var.kube_version != null ? var.kube_version : "${data.ibm_container_cluster_versions.cluster_versions.valid_openshift_versions[local.index]}_openshift")
+  worker_count                    = var.workers_per_zone
+  disable_public_service_endpoint = var.public_service_endpoint_disabled
+  disable_outbound_traffic_protection = var.disable_outbound_traffic_protection
+  resource_group_id               = data.ibm_resource_group.resource_group.id
+  cos_instance_crn                = ibm_resource_instance.cos_instance.id
+  wait_till                       = "OneWorkerNodeReady"
 
-  primary_network_interface {
-    subnet          = ibm_is_subnet.subnet_module_rgonzalez.id
-    security_groups = [ibm_is_security_group.ssh_rgonzalez_security_group.id]
+  dynamic "zones" {
+    for_each = ibm_is_subnet.subnet
+    content {
+      name      = zones.value.zone
+      subnet_id = zones.value.id
+    }
   }
 }
 
-resource "ibm_is_floating_ip" "public_ip" {
-  name   = "public-ip-rgonzalez"
-  target = ibm_is_instance.vm_rgonzalez.primary_network_interface[0].id
-  resource_group = var.resource_group
-  depends_on = [ibm_is_instance.vm_rgonzalez]
+resource "ibm_iam_authorization_policy" "cluster_access_policy" {
+  source_service_name = "containers-kubernetes"
+  source_resource_instance_id = ibm_container_vpc_cluster.cluster.id
+  target_service_name = "containers-kubernetes"
+  roles = ["Administrator"] # Puedes ajustar el rol según sea necesario
+  users = ["abermudez@stemdo.io"] # Reemplaza con el ID de usuario de IBM Cloud
+}
+
+
+# COS instance for cluster registry backup
+resource "ibm_resource_instance" "cos_instance" {
+  name     = local.name
+  service  = var.service_offering
+  plan     = var.plan
+  location = "global"
+  resource_group_id               = data.ibm_resource_group.resource_group.id
 }
