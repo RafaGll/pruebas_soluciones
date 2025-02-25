@@ -68,7 +68,7 @@ variable "kube_version" {
 # Cloud Object Storage (COS) variables
 variable "service_offering" {
   type        = string
-  default     = "cos-prueba"
+  default     = "cloud-object-storage"
   description = "The IBM Cloud service to provision."
 }
 
