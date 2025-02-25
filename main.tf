@@ -86,14 +86,6 @@ resource "ibm_container_vpc_cluster" "cluster" {
   }
 }
 
-resource "ibm_iam_authorization_policy" "cluster_access_policy" {
-  source_service_name = "containers-kubernetes"
-  source_resource_instance_id = ibm_container_vpc_cluster.cluster.id
-  target_service_name = "containers-kubernetes"
-  roles = ["Administrator"] # Puedes ajustar el rol según sea necesario
-  users = ["abermudez@stemdo.io"] # Reemplaza con el ID de usuario de IBM Cloud
-}
-
 
 # COS instance for cluster registry backup
 resource "ibm_resource_instance" "cos_instance" {
