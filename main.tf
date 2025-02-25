@@ -9,7 +9,7 @@ terraform {
 
 provider "ibm" {
   region = "eu-es"
-  ibmcloud_api_key=var.api_key
+  ibmcloud_api_key=var.ibmcloud_api_key
 }
 
 locals {
