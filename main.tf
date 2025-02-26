@@ -105,7 +105,7 @@ data "ibm_iam_access_group" "wiki" {
 }
 
 resource "ibm_iam_access_group_policy" "grupo_policy" {
-  access_group_id = data.ibm_iam_access_group.wiki.id
+  access_group_id = data.ibm_iam_access_group.wiki.groups[0].id
   roles           = ["Reader", "Writer", "Viewer"] 
 
   resource_attributes {
