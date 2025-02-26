@@ -100,16 +100,14 @@ resource "ibm_resource_instance" "cos_instance" {
 #   email = "acajas@stemdo.io" 
 # }
 
-resource "ibm_iam_user_policy" "usuario_policy" {
-  ibm_id = "acajas@stemdo.io"
-  roles  = ["Reader", "Writer", "Manager", "Viewer"] 
+data "ibm_iam_access_group" "grupo_wiki" {
+  name = "STEMDO_Wiki"
+}
 
-  # resources {
-  #   service = "containers-kubernetes"
-  #   resource_group_id = data.ibm_resource_group.resource_group.id
-  #   resource_type = "cluster"
-  #   resource      = "cuvcrbfm0q6aec1v8j40"
-  # }
+resource "ibm_iam_access_group_policy" "grupo_policy" {
+  access_group_id = data.ibm_iam_access_group.grupo_wiki.id
+  roles           = ["Reader", "Writer", "Viewer"] 
+
   resource_attributes {
     value = "containers-kubernetes"
     name = "serviceName"
@@ -121,4 +119,20 @@ resource "ibm_iam_user_policy" "usuario_policy" {
     name = "serviceInstance"
   }
 }
+
+# resource "ibm_iam_user_policy" "usuario_policy" {
+#   ibm_id = "acajas@stemdo.io"
+#   roles  = ["Reader", "Writer", "Manager", "Viewer"] 
+
+#   resource_attributes {
+#     value = "containers-kubernetes"
+#     name = "serviceName"
+#   }
+  
+#   resource_attributes {
+#     value = ibm_container_vpc_cluster.cluster.id
+#     operator = "stringEquals"
+#     name = "serviceInstance"
+#   }
+# }
 
