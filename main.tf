@@ -116,7 +116,7 @@ resource "ibm_iam_user_policy" "usuario_policy" {
   }
   
   resource_attributes {
-    value = "cuvcrbfm0q6aec1v8j40"
+    value = ibm_container_vpc_cluster.cluster.id
     operator = "stringEquals"
     name = "serviceInstance"
   }
