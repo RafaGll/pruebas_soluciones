@@ -118,6 +118,12 @@ resource "ibm_iam_access_group_policy" "grupo_policy" {
     operator = "stringEquals"
     name = "serviceInstance"
   }
+  
+  resource_attributes {
+    value = "stemdo-wiki"
+    operator = "stringEquals"
+    name = "namespace"
+  }
 }
 
 # resource "ibm_iam_user_policy" "usuario_policy" {
