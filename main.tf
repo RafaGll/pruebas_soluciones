@@ -110,6 +110,10 @@ resource "ibm_iam_user_policy" "usuario_policy" {
   #   resource_type = "cluster"
   #   resource      = "cuvcrbfm0q6aec1v8j40"
   # }
+  resource_attributes {
+    value = "containers-kubernetes"
+    name = "serviceName"
+  }
   
   resource_attributes {
     value = "cuvcrbfm0q6aec1v8j40"
