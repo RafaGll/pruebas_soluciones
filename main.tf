@@ -107,7 +107,7 @@ resource "ibm_iam_user_policy" "usuario_policy" {
   resources {
     service = "containers-kubernetes"
     resource_group_id = data.ibm_resource_group.resource_group.id
-    resource_type = "serviceInstance"
+    resource_type = "cluster"
     resource      = "cuvcrbfm0q6aec1v8j40"
   }
 }
