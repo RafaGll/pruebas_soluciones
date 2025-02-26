@@ -97,7 +97,7 @@ resource "ibm_resource_instance" "cos_instance" {
 }
 
 data "ibm_iam_user" "usuario" {
-  email = "abermudez@stemdo.io" 
+  email = "acajas@stemdo.io" 
 }
 
 resource "ibm_iam_user_policy" "usuario_policy" {
