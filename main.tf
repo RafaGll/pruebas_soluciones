@@ -101,7 +101,7 @@ resource "ibm_resource_instance" "cos_instance" {
 # }
 
 data "ibm_iam_access_group" "grupo_wiki" {
-  name = "STEMDO_Wiki"
+  id = "AccessGroupId-d2d49739-cba6-4ad5-b499-3ada29f389ae"
 }
 
 resource "ibm_iam_access_group_policy" "grupo_policy" {
