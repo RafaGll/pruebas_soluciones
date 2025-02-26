@@ -100,12 +100,12 @@ resource "ibm_resource_instance" "cos_instance" {
 #   email = "acajas@stemdo.io" 
 # }
 
-# data "ibm_iam_access_group" "grupo_wiki" {
-  # id = "AccessGroupId-d2d49739-cba6-4ad5-b499-3ada29f389ae"
-# }
+data "ibm_iam_access_group" "wiki" {
+  access_group_name = "STEMDO_Wiki"
+}
 
 resource "ibm_iam_access_group_policy" "grupo_policy" {
-  access_group_id = "AccessGroupId-d2d49739-cba6-4ad5-b499-3ada29f389ae"
+  access_group_id = data.ibm_iam_access_group.wiki.id
   roles           = ["Reader", "Writer", "Viewer"] 
 
   resource_attributes {
