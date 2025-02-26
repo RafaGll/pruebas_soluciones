@@ -96,12 +96,12 @@ resource "ibm_resource_instance" "cos_instance" {
   resource_group_id               = data.ibm_resource_group.resource_group.id
 }
 
-data "ibm_iam_user" "usuario" {
+data "ibm_iam_users" "usuario" {
   email = "acajas@stemdo.io" 
 }
 
 resource "ibm_iam_user_policy" "usuario_policy" {
-  iam_id = data.ibm_iam_user.usuario.iam_id
+  iam_id = data.ibm_iam_users.usuario.iam_id
   roles  = ["Reader", "Writer", "Manager", "Viewer"] 
 
   resources {
