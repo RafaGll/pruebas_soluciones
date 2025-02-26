@@ -104,9 +104,9 @@ resource "ibm_iam_user_policy" "usuario_policy" {
   iam_id = data.ibm_iam_user.usuario.iam_id
   roles  = ["Reader", "Writer", "Manager", "Viewer"] 
 
-  resources = [{
+  resources {
     resource_type = "cluster"
     resource      = ibm_container_vpc_cluster.cluster.id
-  }]
+  }
 }
 
