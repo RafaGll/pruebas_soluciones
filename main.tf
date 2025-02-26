@@ -105,7 +105,8 @@ resource "ibm_iam_user_policy" "usuario_policy" {
   roles  = ["Reader", "Writer", "Manager", "Viewer"] 
 
   resources {
-    resource_type = "cluster"
+    service = "containers-kubernetes"
+    resource_type = "serviceInstance"
     resource      = ibm_container_vpc_cluster.cluster.id
   }
 }
