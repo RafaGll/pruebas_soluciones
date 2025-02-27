@@ -123,7 +123,24 @@ data "ibm_iam_access_group" "wiki" {
 resource "ibm_iam_access_group_policy" "grupo_policy" {
   depends_on = [ kubernetes_namespace.stemdo-wiki ]
   access_group_id = data.ibm_iam_access_group.wiki.groups[0].id
-  roles           = ["Reader", "Writer", "Viewer"] 
+  roles           = ["Viewer"] 
+
+  resource_attributes {
+    value = "containers-kubernetes"
+    name = "serviceName"
+  }
+  
+  resource_attributes {
+    value = ibm_container_vpc_cluster.cluster.id
+    operator = "stringEquals"
+    name = "serviceInstance"
+  }
+}
+
+resource "ibm_iam_access_group_policy" "grupo_policy" {
+  depends_on = [ kubernetes_namespace.stemdo-wiki ]
+  access_group_id = data.ibm_iam_access_group.wiki.groups[0].id
+  roles           = ["Reader", "Writer" ] 
 
   resource_attributes {
     value = "containers-kubernetes"
@@ -140,13 +157,31 @@ resource "ibm_iam_access_group_policy" "grupo_policy" {
     value = kubernetes_namespace.stemdo-wiki.metadata[0].name
     operator = "stringEquals"
     name = "namespace"
+  }
+}
+
+
+resource "ibm_iam_user_policy" "usuario_policy" {
+  depends_on = [ kubernetes_namespace.stemdo-wiki ]
+  ibm_id = "acajas@stemdo.io"
+  roles  = ["Viewer"] 
+
+  resource_attributes {
+    value = "containers-kubernetes"
+    name = "serviceName"
+  }
+  
+  resource_attributes {
+    value = ibm_container_vpc_cluster.cluster.id
+    operator = "stringEquals"
+    name = "serviceInstance"
   }
 }
 
 resource "ibm_iam_user_policy" "usuario_policy" {
   depends_on = [ kubernetes_namespace.stemdo-wiki ]
   ibm_id = "acajas@stemdo.io"
-  roles  = ["Reader", "Writer", "Manager", "Viewer"] 
+  roles  = ["Reader", "Writer", "Manager"] 
 
   resource_attributes {
     value = "containers-kubernetes"
@@ -165,4 +200,3 @@ resource "ibm_iam_user_policy" "usuario_policy" {
     name = "namespace"
   }
 }
-
