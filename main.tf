@@ -120,7 +120,7 @@ data "ibm_iam_access_group" "wiki" {
   access_group_name = "STEMDO_Wiki"
 }
 
-resource "ibm_iam_access_group_policy" "grupo_policy" {
+resource "ibm_iam_access_group_policy" "group_policy_viewer" {
   depends_on = [ kubernetes_namespace.stemdo-wiki ]
   access_group_id = data.ibm_iam_access_group.wiki.groups[0].id
   roles           = ["Viewer"] 
@@ -137,7 +137,7 @@ resource "ibm_iam_access_group_policy" "grupo_policy" {
   }
 }
 
-resource "ibm_iam_access_group_policy" "grupo_policy" {
+resource "ibm_iam_access_group_policy" "group_policy_filter" {
   depends_on = [ kubernetes_namespace.stemdo-wiki ]
   access_group_id = data.ibm_iam_access_group.wiki.groups[0].id
   roles           = ["Reader", "Writer" ] 
@@ -161,7 +161,7 @@ resource "ibm_iam_access_group_policy" "grupo_policy" {
 }
 
 
-resource "ibm_iam_user_policy" "usuario_policy" {
+resource "ibm_iam_user_policy" "user_policy_viewer" {
   depends_on = [ kubernetes_namespace.stemdo-wiki ]
   ibm_id = "acajas@stemdo.io"
   roles  = ["Viewer"] 
@@ -178,7 +178,7 @@ resource "ibm_iam_user_policy" "usuario_policy" {
   }
 }
 
-resource "ibm_iam_user_policy" "usuario_policy" {
+resource "ibm_iam_user_policy" "user_policy_filter" {
   depends_on = [ kubernetes_namespace.stemdo-wiki ]
   ibm_id = "acajas@stemdo.io"
   roles  = ["Reader", "Writer", "Manager"] 
