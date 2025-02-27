@@ -97,39 +97,39 @@ resource "ibm_resource_instance" "cos_instance" {
 }
 
 
-# resource "null_resource" "wait_for_cluster" {
-#   depends_on = [ibm_container_vpc_cluster.cluster]
-
-#   provisioner "local-exec" {
-#     command = <<EOT
-#       #!/bin/bash
-#       max_attempts=30
-#       attempt=1
-#       echo "Esperando a que el clúster esté operativo..."
-#       while ! kubectl get nodes >/dev/null 2>&1; do
-#         echo "Intento $attempt: Clúster no disponible. Esperando 10 segundos..."
-#         sleep 10
-#         attempt=$((attempt + 1))
-#         if [ $attempt -gt $max_attempts ]; then
-#           echo "El clúster no está disponible después de $max_attempts intentos."
-#           exit 1
-#         fi
-#       done
-#       echo "El clúster está operativo."
-#     EOT
-#     interpreter = ["/bin/bash", "-c"]
-#   }
-# }
-
-
-resource "time_sleep" "wait_60_seconds" {
+resource "null_resource" "wait_for_cluster" {
   depends_on = [ibm_container_vpc_cluster.cluster]
-  create_duration = "30s"
+
+  provisioner "local-exec" {
+    command = <<EOT
+      #!/bin/bash
+      max_attempts=30
+      attempt=1
+      echo "Esperando a que el clúster esté operativo..."
+      while ! kubectl get nodes >/dev/null 2>&1; do
+        echo "Intento $attempt: Clúster no disponible. Esperando 10 segundos..."
+        sleep 10
+        attempt=$((attempt + 1))
+        if [ $attempt -gt $max_attempts ]; then
+          echo "El clúster no está disponible después de $max_attempts intentos."
+          exit 1
+        fi
+      done
+      echo "El clúster está operativo."
+    EOT
+    interpreter = ["/bin/bash", "-c"]
+  }
 }
 
 
+# resource "time_sleep" "wait_60_seconds" {
+#   depends_on = [ibm_container_vpc_cluster.cluster]
+#   create_duration = "30s"
+# }
+
+
 data "ibm_container_cluster_config" "cluster_config" {
-  depends_on = [ time_sleep.wait_60_seconds]
+  depends_on = [null_resource.wait_for_cluster]
   cluster_name_id = ibm_container_vpc_cluster.cluster.id
   resource_group_id = data.ibm_resource_group.resource_group.id
   admin = true
@@ -142,7 +142,7 @@ provider "kubernetes" {
 }
 
 resource "kubernetes_namespace" "stemdo-wiki" {
-  depends_on = [ data.ibm_container_cluster_config.cluster_config, time_sleep.wait_60_seconds ]
+  depends_on = [ null_resource.wait_for_cluster ]
   metadata {
     name = "stemdo-wiki"
   }
