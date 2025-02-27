@@ -96,15 +96,32 @@ resource "ibm_resource_instance" "cos_instance" {
   resource_group_id               = data.ibm_resource_group.resource_group.id
 }
 
-# data "ibm_iam_users" "usuario" {
-#   email = "acajas@stemdo.io" 
-# }
+
+data "ibm_container_cluster_config" "cluster_config" {
+  depends_on = [ibm_container_vpc_cluster.cluster]
+  cluster_name_id = ibm_container_vpc_cluster.cluster.id
+  resource_group_id = data.ibm_resource_group.resource_group.id
+  admin = true
+}
+
+provider "kubernetes" {
+  host = data.ibm_container_cluster_config.cluster_config.host
+  token = data.ibm_container_cluster_config.cluster_config.token
+  cluster_ca_certificate = data.ibm_container_cluster_config.cluster_config.cluster_ca_certificate
+}
+
+resource "kubernetes_namespace" "stemdo-wiki" {
+  metadata {
+    name = "stemdo-wiki"
+  }
+}
 
 data "ibm_iam_access_group" "wiki" {
   access_group_name = "STEMDO_Wiki"
 }
 
 resource "ibm_iam_access_group_policy" "grupo_policy" {
+  depends_on = [ kubernetes_namespace.stemdo-wiki ]
   access_group_id = data.ibm_iam_access_group.wiki.groups[0].id
   roles           = ["Reader", "Writer", "Viewer"] 
 
@@ -120,13 +137,14 @@ resource "ibm_iam_access_group_policy" "grupo_policy" {
   }
   
   resource_attributes {
-    value = "stemdo-wiki"
+    value = kubernetes_namespace.stemdo-wiki.metadata.name
     operator = "stringEquals"
     name = "namespace"
   }
 }
 
 resource "ibm_iam_user_policy" "usuario_policy" {
+  depends_on = [ kubernetes_namespace.stemdo-wiki ]
   ibm_id = "acajas@stemdo.io"
   roles  = ["Reader", "Writer", "Manager", "Viewer"] 
 
@@ -142,7 +160,7 @@ resource "ibm_iam_user_policy" "usuario_policy" {
   }
 
   resource_attributes {
-    value = "stemdo-wiki"
+    value = kubernetes_namespace.stemdo-wiki.metadata.name
     operator = "stringEquals"
     name = "namespace"
   }
