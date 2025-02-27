@@ -137,7 +137,7 @@ resource "ibm_iam_access_group_policy" "grupo_policy" {
   }
   
   resource_attributes {
-    value = kubernetes_namespace.stemdo-wiki.metadata.name
+    value = kubernetes_namespace.stemdo-wiki.metadata[0].name
     operator = "stringEquals"
     name = "namespace"
   }
@@ -160,7 +160,7 @@ resource "ibm_iam_user_policy" "usuario_policy" {
   }
 
   resource_attributes {
-    value = kubernetes_namespace.stemdo-wiki.metadata.name
+    value = kubernetes_namespace.stemdo-wiki.metadata[0].name
     operator = "stringEquals"
     name = "namespace"
   }
