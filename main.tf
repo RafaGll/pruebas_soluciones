@@ -126,19 +126,25 @@ resource "ibm_iam_access_group_policy" "grupo_policy" {
   }
 }
 
-# resource "ibm_iam_user_policy" "usuario_policy" {
-#   ibm_id = "acajas@stemdo.io"
-#   roles  = ["Reader", "Writer", "Manager", "Viewer"] 
+resource "ibm_iam_user_policy" "usuario_policy" {
+  ibm_id = "acajas@stemdo.io"
+  roles  = ["Reader", "Writer", "Manager", "Viewer"] 
 
-#   resource_attributes {
-#     value = "containers-kubernetes"
-#     name = "serviceName"
-#   }
+  resource_attributes {
+    value = "containers-kubernetes"
+    name = "serviceName"
+  }
   
-#   resource_attributes {
-#     value = ibm_container_vpc_cluster.cluster.id
-#     operator = "stringEquals"
-#     name = "serviceInstance"
-#   }
-# }
+  resource_attributes {
+    value = ibm_container_vpc_cluster.cluster.id
+    operator = "stringEquals"
+    name = "serviceInstance"
+  }
+
+  resource_attributes {
+    value = "stemdo-wiki"
+    operator = "stringEquals"
+    name = "namespace"
+  }
+}
 
