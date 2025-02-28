@@ -96,22 +96,21 @@ resource "ibm_resource_instance" "cos_instance" {
   resource_group_id               = data.ibm_resource_group.resource_group.id
 }
 
-
 resource "null_resource" "wait_for_cluster" {
   depends_on = [ibm_container_vpc_cluster.cluster]
 
   provisioner "local-exec" {
     command = <<EOT
       #!/bin/bash
-      max_attempts=100
+      max_attempts=50
       attempt=1
       echo "Esperando a que el clúster esté operativo..."
-      while ! kubectl get nodes >/dev/null 2>&1; do
+      while ! curl --cacert <(echo '${data.ibm_container_cluster_config.cluster_config.ca_certificate}') -s https://${data.ibm_container_cluster_config.cluster_config.host}/healthz | grep -q "ok"; do
         echo "Intento $attempt: Clúster no disponible. Esperando 10 segundos..."
         sleep 20
         attempt=$((attempt + 1))
         if [ $attempt -gt $max_attempts ]; then
-          echo "El clúster no está disponible después de $max_attempts intentos."
+          echo "El clúster no está operativo después de $max_attempts intentos."
           exit 1
         fi
       done
@@ -120,6 +119,7 @@ resource "null_resource" "wait_for_cluster" {
     interpreter = ["/bin/bash", "-c"]
   }
 }
+
 
 
 # resource "time_sleep" "wait_60_seconds" {
