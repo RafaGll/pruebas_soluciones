@@ -103,12 +103,12 @@ resource "null_resource" "wait_for_cluster" {
   provisioner "local-exec" {
     command = <<EOT
       #!/bin/bash
-      max_attempts=30
+      max_attempts=100
       attempt=1
       echo "Esperando a que el clúster esté operativo..."
       while ! kubectl get nodes >/dev/null 2>&1; do
         echo "Intento $attempt: Clúster no disponible. Esperando 10 segundos..."
-        sleep 10
+        sleep 20
         attempt=$((attempt + 1))
         if [ $attempt -gt $max_attempts ]; then
           echo "El clúster no está disponible después de $max_attempts intentos."
