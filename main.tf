@@ -97,7 +97,7 @@ resource "ibm_resource_instance" "cos_instance" {
 }
 
 resource "null_resource" "wait_for_cluster" {
-  depends_on = [ibm_container_vpc_cluster.cluster]
+  depends_on = [ibm_container_vpc_cluster.cluster, data.ibm_container_cluster_config.cluster_config]
 
   provisioner "local-exec" {
     command = <<EOT
@@ -129,7 +129,7 @@ resource "null_resource" "wait_for_cluster" {
 
 
 data "ibm_container_cluster_config" "cluster_config" {
-  depends_on = [null_resource.wait_for_cluster]
+  depends_on = [ibm_container_vpc_cluster.cluster]
   cluster_name_id = ibm_container_vpc_cluster.cluster.id
   resource_group_id = data.ibm_resource_group.resource_group.id
   admin = true
