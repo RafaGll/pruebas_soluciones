@@ -123,7 +123,7 @@ resource "ibm_resource_instance" "cos_instance" {
 
 resource "time_sleep" "wait_60_seconds" {
   depends_on = [ibm_container_vpc_cluster.cluster]
-  create_duration = "1800s"
+  create_duration = "10s"
 }
 
 
