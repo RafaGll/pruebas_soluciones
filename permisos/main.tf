@@ -1,3 +1,17 @@
+terraform {
+  required_providers {
+    ibm = {
+      source = "IBM-Cloud/ibm"
+      version = ">= 1.12.0"
+    }
+  }
+}
+
+provider "ibm" {
+  region = "eu-es"
+  ibmcloud_api_key=var.ibmcloud_api_key
+}
+
 
 data "ibm_resource_group" "resource_group" {
   name = var.resource_group
