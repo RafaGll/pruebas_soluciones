@@ -15,6 +15,12 @@ provider "ibm" {
 resource "null_resource" "wait_for_cluster" {
   provisioner "local-exec" {
     command = <<EOT
+      if ! command -v jq &> /dev/null; then
+        echo "jq no encontrado."
+        install_jq
+      else
+        echo "jq ya está instalado."
+      fi
       while true; do
         status=$(ibmcloud ks cluster get --cluster ibm-openshift-pruebas --output json | jq -r '.state')
         if [ "$status" = "normal" ]; then
