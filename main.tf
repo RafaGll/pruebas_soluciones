@@ -107,9 +107,9 @@ provider "ibm" {
 # }
 
 resource "ibm_schematics_job" "schematics_job" {
-  # provider = ibm.schematics
+  depends_on = [ ibm_container_vpc_cluster.cluster, ibm_resource_instance.cos_instance ]
   command_object = "workspace"
   command_object_id = "eu-gb.workspace.ibmsch-RafaGll.b2ef73d7"
-  command_name = "workspace_refresh"
+  command_name = "workspace_apply"
   location = "eu-gb"
 }
