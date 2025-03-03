@@ -107,9 +107,9 @@ provider "ibm" {
 # }
 
 resource "ibm_schematics_job" "schematics_job" {
-  # provider = ibm.schematics
-  command_object = "workspace"
+  provider = ibm.schematics
+  command_object = "action"
   command_object_id = "eu-gb.workspace.ibmsch-RafaGll.b2ef73d7"
-  command_name = "workspace_plan"
+  command_name = "workspace_refresh"
   location = "eu-gb"
 }
