@@ -14,26 +14,22 @@ provider "ibm" {
 
 resource "null_resource" "wait_for_cluster" {
   provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
     command = <<EOT
-      if ! command -v jq &> /dev/null; then
-        echo "jq no encontrado."
-        install_jq
-      else
-        echo "jq ya está instalado."
-      fi
+      echo "Esperando a que el cluster 'ibm-openshift-pruebas' esté en estado 'normal'..."
       while true; do
-        status=$(ibmcloud ks cluster get --cluster ibm-openshift-pruebas --output json | jq -r '.state')
-        if [ "$status" = "normal" ]; then
+        state=$(ibmcloud ks cluster get --cluster ibm-openshift-pruebas --output json 2>/dev/null | jq -r '.state' || echo "")
+        if [ "$state" = "normal" ]; then
           echo "El cluster está listo."
-          break
+          exit 0
         fi
-        echo "Esperando a que el cluster esté listo..."
+        echo "Estado actual: '$state'. Esperando 10 segundos..."
         sleep 10
       done
     EOT
   }
 }
-
+  
 
 data "ibm_resource_group" "resource_group" {
   depends_on = [ null_resource.wait_for_cluster ]
