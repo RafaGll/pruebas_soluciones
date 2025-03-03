@@ -102,6 +102,6 @@ data "ibm_schematics_workspace" "schematics_workspace" {
 
 resource "ibm_schematics_job" "schematics_job" {
     command_object = "workspace"
-    command_object_id = data.ibm_schematics_workspace.schematics_workspace.id
+    command_object_id = "eu-gb.workspace.ibmsch-RafaGll.b2ef73d7"
     command_name = "workspace_apply"
 }
