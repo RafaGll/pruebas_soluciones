@@ -1,0 +1,30 @@
+name: Apply Schematics
+
+on:
+  workflow_dispatch:
+
+jobs:
+  apply_schematics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v2
+
+      - name: Instalar IBM Cloud CLI
+        run: |
+          curl -sL https://ibm.biz/idt-installer | bash
+          export PATH=$PATH:$HOME/ibmcloud/bin
+
+      - name: Autenticarse en IBM Cloud
+        run: |
+          ibmcloud login --apikey ${{ secrets.IBM_CLOUD_API_KEY }} -r eu-es
+          ibmcloud target -g Stemdo_Sandbox
+
+      - name: Instalar plugin de Schematics
+        run: ibmcloud plugin install schematics
+
+      - name: Ejecutar Apply de Schematics (Cluster)
+        run: ibmcloud schematics apply --w ${{ vars.CLUSTER_WORKSPACE_ID }} --force
+
+      - name: Ejecutar Apply de Schematics (Permisos)
+        run: ibmcloud schematics apply --w ${{ vars.PERMISOS_WORKSPACE_ID }} --force
