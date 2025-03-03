@@ -12,16 +12,35 @@ provider "ibm" {
   ibmcloud_api_key=var.ibmcloud_api_key
 }
 
+resource "null_resource" "wait_for_cluster" {
+  provisioner "local-exec" {
+    command = <<EOT
+      while true; do
+        status=$(ibmcloud ks cluster-get ibm-openshift-pruebas --output json | jq -r '.state')
+        if [ "$status" = "normal" ]; then
+          echo "El cluster está listo."
+          break
+        fi
+        echo "Esperando a que el cluster esté listo..."
+        sleep 10
+      done
+    EOT
+  }
+}
+
 
 data "ibm_resource_group" "resource_group" {
+  depends_on = [ null_resource.wait_for_cluster ]
   name = var.resource_group
 }
 
 data "ibm_container_vpc_cluster" "cluster" {
+  depends_on = [ null_resource.wait_for_cluster ]
   name = "ibm-openshift-pruebas"
   resource_group_id = data.ibm_resource_group.resource_group.id
 }
 data "ibm_container_cluster_config" "cluster_config" {
+  depends_on = [ null_resource.wait_for_cluster ]
   cluster_name_id = data.ibm_container_vpc_cluster.cluster.id
   resource_group_id = data.ibm_resource_group.resource_group.id
   admin = true
@@ -41,6 +60,7 @@ resource "kubernetes_namespace" "stemdo-wiki" {
 }
 
 data "ibm_iam_access_group" "wiki" {
+  depends_on = [ null_resource.wait_for_cluster ]
   access_group_name = "STEMDO_Wiki"
 }
 
