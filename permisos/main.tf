@@ -16,7 +16,7 @@ resource "null_resource" "wait_for_cluster" {
   provisioner "local-exec" {
     command = <<EOT
       while true; do
-        status=$(ibmcloud ks cluster-get ibm-openshift-pruebas --output json | jq -r '.state')
+        status=$(ibmcloud ks cluster get --cluster ibm-openshift-pruebas --output json | jq -r '.state')
         if [ "$status" = "normal" ]; then
           echo "El cluster está listo."
           break
