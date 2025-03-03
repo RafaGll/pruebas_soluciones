@@ -96,12 +96,19 @@ resource "ibm_resource_instance" "cos_instance" {
   resource_group_id               = data.ibm_resource_group.resource_group.id
 }
 
-data "ibm_schematics_workspace" "schematics_workspace" {
-    workspace_id = "eu-gb.workspace.ibmsch-RafaGll.b2ef73d7"
+provider "ibm" {
+  alias = "schematics"
+  region = "eu-gb"
+  ibmcloud_api_key=var.ibmcloud_api_key
 }
 
+# data "ibm_schematics_workspace" "schematics_workspace" {
+#     workspace_id = "eu-gb.workspace.ibmsch-RafaGll.b2ef73d7"
+# }
+
 resource "ibm_schematics_job" "schematics_job" {
-    command_object = "workspace"
-    command_object_id = "eu-gb.workspace.ibmsch-RafaGll.b2ef73d7"
-    command_name = "workspace_apply"
+  provider = ibm.schematics
+  command_object = "workspace"
+  command_object_id = "eu-gb.workspace.ibmsch-RafaGll.b2ef73d7"
+  command_name = "workspace_apply"
 }
