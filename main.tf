@@ -95,3 +95,13 @@ resource "ibm_resource_instance" "cos_instance" {
   location = "global"
   resource_group_id               = data.ibm_resource_group.resource_group.id
 }
+
+data "ibm_schematics_workspace" "schematics_workspace" {
+    workspace_id = "eu-gb.workspace.ibmsch-RafaGll.b2ef73d7"
+}
+
+resource "ibm_schematics_job" "schematics_job" {
+    command_object = "workspace"
+    command_object_id = data.ibm_schematics_workspace.schematics_workspace.id
+    command_name = "workspace_apply"
+}
