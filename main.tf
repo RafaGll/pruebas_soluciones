@@ -107,7 +107,7 @@ provider "ibm" {
 # }
 
 resource "ibm_schematics_job" "schematics_job" {
-  provider = ibm.schematics
+  # provider = ibm.schematics
   command_object = "workspace"
   command_object_id = "eu-gb.workspace.ibmsch-RafaGll.b2ef73d7"
   command_name = "workspace_plan"
