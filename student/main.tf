@@ -12,9 +12,7 @@ provider "ibm" {
   ibmcloud_api_key=var.ibmcloud_api_key
 }
 
-data "ibm_resource_group" "resource_group" {
-  name = var.resource_group
-}
+
 
 data "ibm_iam_access_group" "wiki" {
   access_group_name = "Stemdo_TEST"
