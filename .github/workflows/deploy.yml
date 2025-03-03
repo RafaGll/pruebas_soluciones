@@ -17,7 +17,7 @@ jobs:
 
       - name: Autenticarse en IBM Cloud
         run: |
-          ibmcloud login --apikey ${{ secrets.IBM_CLOUD_API_KEY }} -r eu-es
+          ibmcloud login --apikey ${{ secrets.IBM_CLOUD_API_KEY }} -r eu-gb
           ibmcloud target -g Stemdo_Sandbox
 
       - name: Instalar plugin de Schematics
