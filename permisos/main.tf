@@ -15,32 +15,24 @@ resource "null_resource" "wait_for_cluster" {
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
     command = <<EOT
-      if ! command -v ibmcloud >/dev/null 2>&1; then
-        echo "Error: ibmcloud no está instalado. Por favor, instálalo y configura el plugin requerido."
-        exit 1
-      fi
+    
 
-      # Verificar que el plugin 'ks' de ibmcloud esté instalado
-      if ! ibmcloud plugin list | grep -q "ks"; then
-        echo "Error: el plugin 'ks' de ibmcloud no está instalado. Por favor, instálalo."
-        exit 1
-      fi
-
-      # Verificar que jq esté instalado
-      if ! command -v jq >/dev/null 2>&1; then
-        echo "Error: jq no está instalado. Por favor, instálalo."
-        exit 1
-      fi
-
+      max_attemps=240
+      attempt=0
       # Bucle para comprobar el estado del cluster
       while true; do
         state=$(ibmcloud ks cluster get --cluster ibm-openshift-pruebas --output json | jq -r '.state')
         if [ "$state" = "normal" ]; then
           echo "El estado del cluster es 'normal'."
-          break
+          exit 0
         else
-          echo "Estado actual: $state. Esperando 10 segundos..."
+          echo "Intento $((attempt+1)): Estado actual: $state. Esperando 10 segundos..."
           sleep 10
+          attempt=$((attempt+1))
+          if [ "$attempt" -ge "$max_attempts" ]; then
+            echo "Error: El estado del cluster no ha alcanzado 'normal' en 40 minutos."
+            exit 1
+          fi
         fi
       done
     EOT
