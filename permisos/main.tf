@@ -15,26 +15,33 @@ resource "null_resource" "wait_for_cluster" {
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
     command = <<EOT
-      echo "Esperando a que el cluster 'ibm-openshift-pruebas' esté completamente desplegado..."
+      if ! command -v ibmcloud >/dev/null 2>&1; then
+        echo "Error: ibmcloud no está instalado. Por favor, instálalo y configura el plugin requerido."
+        exit 1
+      fi
+
+      # Verificar que el plugin 'ks' de ibmcloud esté instalado
+      if ! ibmcloud plugin list | grep -q "ks"; then
+        echo "Error: el plugin 'ks' de ibmcloud no está instalado. Por favor, instálalo."
+        exit 1
+      fi
+
+      # Verificar que jq esté instalado
+      if ! command -v jq >/dev/null 2>&1; then
+        echo "Error: jq no está instalado. Por favor, instálalo."
+        exit 1
+      fi
+
+      # Bucle para comprobar el estado del cluster
       while true; do
-        # Obtener la salida del cluster
-        output=$(ibmcloud ks cluster get --cluster ibm-openshift-pruebas --output json 2>/dev/null)
-        state=$(echo "$output" | jq -r '.state')
-        master_url=$(echo "$output" | jq -r '.master_url')
-        echo "DEBUG: Estado: '$state', master_url: '$master_url'"
-        
-        # Intentar obtener la configuración del cluster con el comando de la CLI.
-        ibmcloud ks cluster config --cluster ibm-openshift-pruebas --output json >/dev/null 2>&1
-        config_result=$?
-        echo "DEBUG: Resultado de 'ibmcloud ks cluster config': $config_result"
-        
-        # Si el estado es normal, master_url tiene valor y el comando para obtener la configuración tuvo éxito, salimos.
-        if [ "$state" = "normal" ] && [ -n "$master_url" ] && [ "$master_url" != "null" ] && [ $config_result -eq 0 ]; then
-          echo "El cluster está completamente desplegado y la configuración está disponible."
-          exit 0
+        state=$(ibmcloud ks cluster get --cluster ibm-openshift-pruebas --output json | jq -r '.state')
+        if [ "$state" = "normal" ]; then
+          echo "El estado del cluster es 'normal'."
+          break
+        else
+          echo "Estado actual: $state. Esperando 10 segundos..."
+          sleep 10
         fi
-        echo "El cluster aún no está listo. Esperando 10 segundos..."
-        sleep 10
       done
     EOT
   }
