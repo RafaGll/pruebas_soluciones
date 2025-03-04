@@ -17,7 +17,7 @@ resource "null_resource" "wait_for_cluster" {
     command = <<EOT
     
 
-      max_attemps=240
+      max_attemps=10
       attempt=0
       # Bucle para comprobar el estado del cluster
       while true; do
