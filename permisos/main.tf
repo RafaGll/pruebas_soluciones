@@ -21,15 +21,16 @@ resource "null_resource" "wait_for_cluster" {
 
       while true; do
         state=$(ibmcloud ks cluster get --cluster ibm-openshift-pruebas --output json | jq -r '.state')
-        if [ "$state" = "normal" ]; then
+        if [ "$state" = "normal" ] || [ "$state" = "warning" ]; then
           echo "El estado del cluster es 'normal'."
+          sleep 60
           exit 0
         else
           echo "Intento $((attempt+1)): Estado actual: $state. Esperando 10 segundos..."
           sleep 10
           attempt=$((attempt+1))
           if [ "$attempt" -ge "$max_attempts" ]; then
-            echo "Error: El estado del cluster no ha alcanzado 'normal' en 40 minutos."
+            echo "Error: El estado del cluster no ha alcanzado 'normal' en 50 minutos."
             exit 1
           fi
         fi
