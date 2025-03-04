@@ -18,7 +18,7 @@ resource "null_resource" "wait_for_cluster" {
     command = <<EOT
       echo "Esperando a que el cluster 'ibm-openshift-pruebas' esté en estado 'normal'..."
       while true; do
-        state=$(ibmcloud ks cluster get --cluster ibm-openshift-pruebas --output json 2>/dev/null | jq -r '.state' || echo "")
+        state=$(ibmcloud ks cluster get --cluster ibm-openshift-pruebas --output json 2>/dev/null | jq -r '.state')
         if [ "$state" = "normal" ]; then
           echo "El cluster está listo."
           exit 0
@@ -29,7 +29,7 @@ resource "null_resource" "wait_for_cluster" {
     EOT
   }
 }
-  
+
 
 data "ibm_resource_group" "resource_group" {
   depends_on = [ null_resource.wait_for_cluster ]
