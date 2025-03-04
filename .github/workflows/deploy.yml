@@ -26,5 +26,8 @@ jobs:
       - name: Ejecutar Apply de Schematics (Cluster)
         run: ibmcloud schematics apply --id ${{ vars.CLUSTER_WORKSPACE_ID }} --force
 
+      - name: Esperar 20 segundos
+        run: sleep 20
+
       - name: Ejecutar Apply de Schematics (Permisos)
         run: ibmcloud schematics apply --id ${{ vars.PERMISOS_WORKSPACE_ID }} --force
