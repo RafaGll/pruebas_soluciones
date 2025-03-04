@@ -15,11 +15,10 @@ resource "null_resource" "wait_for_cluster" {
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
     command = <<EOT
-    
-
-      max_attemps=10
+  
+      max_attempts=4  # 40 minutos / 10 segundos = 240 intentos
       attempt=0
-      # Bucle para comprobar el estado del cluster
+
       while true; do
         state=$(ibmcloud ks cluster get --cluster ibm-openshift-pruebas --output json | jq -r '.state')
         if [ "$state" = "normal" ]; then
