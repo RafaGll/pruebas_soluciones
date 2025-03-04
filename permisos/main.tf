@@ -16,7 +16,7 @@ resource "null_resource" "wait_for_cluster" {
     interpreter = ["/bin/bash", "-c"]
     command = <<EOT
   
-      max_attempts=4  # 40 minutos / 10 segundos = 240 intentos
+      max_attempts=300
       attempt=0
 
       while true; do
