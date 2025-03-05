@@ -1,20 +1,36 @@
+##############################################################################
+# Terraform Providers
+##############################################################################
+
 terraform {
   required_providers {
     ibm = {
       source = "IBM-Cloud/ibm"
-      version = ">= 1.12.0"
     }
   }
+  required_version = ">= 0.13"
 }
+
+##############################################################################
+
+##############################################################################
+# IBM Cloud Provider
+##############################################################################
 
 provider "ibm" {
-  region = "eu-es"
-  ibmcloud_api_key=var.ibmcloud_api_key
+  region = var.region
+  # uncomment if using local terraform
+  ibmcloud_api_key = var.ibmcloud_api_key
 }
 
+##############################################################################
+
 locals {
-  name = "${var.name}"
+  # Pick the second to last from the list of supported OpenShift versions
   index = length(data.ibm_container_cluster_versions.cluster_versions.valid_openshift_versions) - 2
+  # Add randomized string to name to prevent name duplication
+  # name = "${var.name}-${random_string.id.result}"
+  name = "${var.name}"
 }
 
 # Create random string to append to name
@@ -86,7 +102,6 @@ resource "ibm_container_vpc_cluster" "cluster" {
   }
 }
 
-
 # COS instance for cluster registry backup
 resource "ibm_resource_instance" "cos_instance" {
   name     = local.name
@@ -94,4 +109,9 @@ resource "ibm_resource_instance" "cos_instance" {
   plan     = var.plan
   location = "global"
   resource_group_id               = data.ibm_resource_group.resource_group.id
+}
+
+resource "ibm_cr_namespace" "cr_namespace" {
+    name = "crpruebas2"
+    resource_group_id = data.ibm_resource_group.resource_group.id
 }

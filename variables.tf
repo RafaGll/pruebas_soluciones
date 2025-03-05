@@ -1,14 +1,14 @@
 # IBM provider variables
 # uncomment if using local terraform
 variable "ibmcloud_api_key" {
-  description = "IBM Rafa api key"
+  description = "IBM Cloud api key"
   type        = string
 }
 
 # Global variables
 variable "name" {
   type        = string
-  default     = "ibm-openshift-pruebas"
+  default     = "cluster-pruebas"
   description = "The name used for creating the VPC, cluster, and other resources. The name will be appended by a random 4 digit string."
 }
 
