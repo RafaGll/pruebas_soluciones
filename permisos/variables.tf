@@ -8,7 +8,7 @@ variable "ibmcloud_api_key" {
 # Global variables
 variable "cluster_name" {
   type        = string
-  default     = "ibm-openshift-pruebas"
+  default     = "cluster-pruebas"
   description = "The name used for creating the VPC, cluster, and other resources. The name will be appended by a random 4 digit string."
 }
 
