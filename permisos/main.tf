@@ -48,7 +48,7 @@ data "ibm_resource_group" "resource_group" {
 
 data "ibm_container_vpc_cluster" "cluster" {
   depends_on = [ null_resource.wait_for_cluster ]
-  name = "ibm-openshift-pruebas"
+  name = var.cluster_name
   resource_group_id = data.ibm_resource_group.resource_group.id
 }
 data "ibm_container_cluster_config" "cluster_config" {
@@ -67,13 +67,13 @@ provider "kubernetes" {
 resource "kubernetes_namespace" "stemdo-wiki" {
   depends_on = [ data.ibm_container_cluster_config.cluster_config ]
   metadata {
-    name = "stemdo-wiki"
+    name = var.namespace_name
   }
 }
 
 data "ibm_iam_access_group" "wiki" {
   depends_on = [ null_resource.wait_for_cluster ]
-  access_group_name = "STEMDO_Wiki"
+  access_group_name = var.access_group_name
 }
 
 resource "ibm_iam_access_group_policy" "group_policy_viewer" {
